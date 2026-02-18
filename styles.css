@@ -80,17 +80,34 @@ h2 {
 
 .hero-link-btn {
   display: inline-block;
-  padding: 9px 14px;
+  min-width: 290px;
+  padding: 10px 16px;
   border: 1px solid rgba(255, 92, 92, 0.45);
   border-radius: 8px;
   background: var(--button-bg);
   color: #fff5f5;
   text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
   font-weight: 600;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
 }
 
-.hero-link-btn:hover {
+.hero-link-btn:link,
+.hero-link-btn:visited {
+  color: #fff5f5;
+  text-decoration: none;
+}
+
+.hero-link-btn:hover,
+.hero-link-btn:focus-visible {
   background: var(--button-hover);
+  text-decoration: none;
+}
+
+.hero-link-btn:active {
+  transform: translateY(1px);
 }
 
 .card {
