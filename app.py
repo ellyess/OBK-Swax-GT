@@ -57,6 +57,17 @@ def get_configured_members() -> list[str]:
     return [str(member).strip() for member in members if str(member).strip()]
 
 
+def get_member_lookup() -> dict[str, str]:
+    return {member.lower(): member for member in get_configured_members()}
+
+
+def resolve_allowed_member_name(raw_name: str) -> str | None:
+    cleaned = str(raw_name or "").strip()
+    if not cleaned:
+        return None
+    return get_member_lookup().get(cleaned.lower())
+
+
 def is_authorized_passcode(passcode: str) -> bool:
     configured = get_default_passcode()
     if not configured:
@@ -94,16 +105,16 @@ def apply_custom_graphics():
         logo_el.style.display = "none"
 
     if background:
-        document.body.style.backgroundImage = (
-            f"linear-gradient(rgba(10, 12, 18, 0.78), rgba(10, 12, 18, 0.84)), url('{background}')"
-        )
+        document.body.style.backgroundImage = f"url('{background}')"
+        document.body.style.backgroundRepeat = "no-repeat"
+        document.body.style.backgroundPosition = "center"
+        document.body.style.backgroundSize = "cover"
 
 
 def render_member_name_options(rows: list[dict]):
+    del rows
     datalist = document.getElementById("member-names")
-    names = set(get_configured_members())
-    names.update(str(row.get("name", "")).strip() for row in rows if str(row.get("name", "")).strip())
-    names_sorted = sorted(names, key=str.lower)
+    names_sorted = sorted(get_configured_members(), key=str.lower)
     datalist.innerHTML = "".join(f'<option value="{escape(name)}"></option>' for name in names_sorted)
 
 
@@ -288,9 +299,16 @@ async def load_profile(event=None):
         set_status("Enter a member name first.")
         return
 
+    resolved_name = resolve_allowed_member_name(name)
+    if resolved_name is None:
+        set_status("Member must be selected from the guild member list.")
+        return
+
+    document.getElementById("member-name").value = resolved_name
+
     await refresh_data(show_status=False)
-    fill_form_for_member(name)
-    set_status(f"Loaded profile for {name}.")
+    fill_form_for_member(resolved_name)
+    set_status(f"Loaded profile for {resolved_name}.")
 
 
 async def save_member(event=None):
@@ -300,6 +318,13 @@ async def save_member(event=None):
     if not name:
         set_status("Member name is required.")
         return
+
+    resolved_name = resolve_allowed_member_name(name)
+    if resolved_name is None:
+        set_status("Member must be selected from the guild member list.")
+        return
+
+    document.getElementById("member-name").value = resolved_name
 
     if not has_backend():
         set_status("Shared save is disabled until config.js has Supabase values.")
@@ -316,18 +341,18 @@ async def save_member(event=None):
 
     row = {
         "guild_code": guild_code,
-        "name": name,
+        "name": resolved_name,
         "week_key": current_week_key(),
         "attacks_used": clamp_attacks(document.getElementById("attacks-used").value),
     }
     for day in DAYS:
         row[day] = bool(document.getElementById(f"day-{day}").checked)
 
-    set_status(f"Saving {name}...")
+    set_status(f"Saving {resolved_name}...")
     try:
         await upsert_row(row)
         await refresh_data(show_status=False)
-        set_status(f"Saved {name}.")
+        set_status(f"Saved {resolved_name}.")
     except Exception as error:
         set_status(f"Save failed: {error}")
 

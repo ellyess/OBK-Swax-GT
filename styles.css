@@ -32,7 +32,7 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(rgba(5, 2, 3, 0.58), rgba(7, 3, 4, 0.76));
+  background: linear-gradient(rgba(5, 2, 3, 0.32), rgba(7, 3, 4, 0.52));
   z-index: 0;
 }
 
