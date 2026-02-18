@@ -4,3 +4,28 @@ window.GUILD_PASSCODE = "3NT3R5W4X";
 window.GUILD_TITLE = "Guild Territory";
 window.GUILD_LOGO_URL = "./assets/logo.png";
 window.GUILD_BACKGROUND_URL = "./assets/background.svg";
+window.GUILD_MEMBERS = [
+	"AJBOBO",
+	"blackpanther",
+	"blizzzy",
+	"BLUE",
+	"Brainiac",
+	"Brown17",
+	"CyclopsHL",
+	"Debs",
+	"Dorkai",
+	"Elchapo5000",
+	"Elerens",
+	"ellyess",
+	"Hankovic",
+	"jesumola",
+	"ltdm",
+	"Mrjayce522",
+	"Oxn",
+	"rektneo",
+	"shelbyofweb3",
+	"Tsunade",
+	"vantaonline",
+	"vinchi",
+	"YbzTX",
+];

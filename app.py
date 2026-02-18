@@ -50,6 +50,13 @@ def get_active_passcode() -> str:
     return normalize_passcode(document.getElementById("guild-passcode").value)
 
 
+def get_configured_members() -> list[str]:
+    members = getattr(window, "GUILD_MEMBERS", [])
+    if members is None:
+        return []
+    return [str(member).strip() for member in members if str(member).strip()]
+
+
 def is_authorized_passcode(passcode: str) -> bool:
     configured = get_default_passcode()
     if not configured:
@@ -61,12 +68,11 @@ def set_active_guild_label():
     passcode = get_active_passcode()
     label = document.getElementById("guild-active")
     if not passcode:
-        label.innerText = "No guild selected."
+        label.innerText = "ENTER PASSCODE"
         return
 
     if is_authorized_passcode(passcode):
-        title = str(getattr(window, "GUILD_TITLE", "Guild")).strip() or "Guild"
-        label.innerText = f"Access granted: {title}"
+        label.innerText = "ACCESS GRANTED TO SWAX"
     else:
         label.innerText = "Passcode entered, but not authorized."
 
@@ -91,6 +97,14 @@ def apply_custom_graphics():
         document.body.style.backgroundImage = (
             f"linear-gradient(rgba(10, 12, 18, 0.78), rgba(10, 12, 18, 0.84)), url('{background}')"
         )
+
+
+def render_member_name_options(rows: list[dict]):
+    datalist = document.getElementById("member-names")
+    names = set(get_configured_members())
+    names.update(str(row.get("name", "")).strip() for row in rows if str(row.get("name", "")).strip())
+    names_sorted = sorted(names, key=str.lower)
+    datalist.innerHTML = "".join(f'<option value="{escape(name)}"></option>' for name in names_sorted)
 
 
 def render_attack_value(*_):
@@ -213,6 +227,7 @@ async def refresh_data(show_status: bool = True):
     if not has_backend():
         set_status("Set SUPABASE_URL and SUPABASE_ANON_KEY in config.js to enable shared sync.")
         state["rows"] = []
+        render_member_name_options([])
         render_day_counts([])
         render_roster([])
         return
@@ -221,6 +236,7 @@ async def refresh_data(show_status: bool = True):
     if not passcode:
         set_status("Enter guild passcode and click Join Guild.")
         state["rows"] = []
+        render_member_name_options([])
         render_day_counts([])
         render_roster([])
         return
@@ -228,6 +244,7 @@ async def refresh_data(show_status: bool = True):
     if not is_authorized_passcode(passcode):
         set_status("Invalid guild passcode.")
         state["rows"] = []
+        render_member_name_options([])
         render_day_counts([])
         render_roster([])
         return
@@ -254,6 +271,7 @@ async def refresh_data(show_status: bool = True):
             updated = [normalize_row(row)[0] for row in rows]
 
         state["rows"] = updated
+        render_member_name_options(updated)
         render_day_counts(updated)
         render_roster(updated)
 
@@ -336,6 +354,7 @@ def clear_guild(event=None):
     document.getElementById("guild-passcode").value = ""
     window.localStorage.removeItem("guild_passcode")
     state["rows"] = []
+    render_member_name_options([])
     render_day_counts([])
     render_roster([])
     set_active_guild_label()
@@ -344,6 +363,7 @@ def clear_guild(event=None):
 
 async def boot():
     apply_custom_graphics()
+    render_member_name_options([])
     persisted = normalize_passcode(window.localStorage.getItem("guild_passcode"))
     initial = persisted
     if initial:

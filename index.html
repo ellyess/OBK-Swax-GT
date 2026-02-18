@@ -18,19 +18,20 @@
       <section class="card">
         <h2>Guild Access</h2>
         <div class="row">
-          <label for="guild-passcode">Guild Passcode</label>
-          <input id="guild-passcode" type="password" placeholder="Enter guild passcode" />
-          <button id="join-guild-btn" py-click="join_guild">Join Guild</button>
-          <button id="clear-guild-btn" py-click="clear_guild">Clear</button>
+          <label for="guild-passcode">PASSCODE</label>
+          <input id="guild-passcode" type="password" placeholder="ENTER GUILD PASSCODE" />
+          <button id="join-guild-btn" py-click="join_guild">ENTER</button>
+          <button id="clear-guild-btn" py-click="clear_guild">CLEAR</button>
         </div>
-        <p id="guild-active" class="muted">No guild selected.</p>
+        <p id="guild-active" class="muted">ENTER PASSCODE</p>
       </section>
 
       <section class="card">
         <h2>Member Update</h2>
         <div class="row">
           <label for="member-name">Member Name</label>
-          <input id="member-name" type="text" placeholder="e.g. Hankovic" />
+          <input id="member-name" type="text" list="member-names" placeholder="e.g. ellyess" />
+          <datalist id="member-names"></datalist>
           <button id="load-profile-btn" py-click="load_profile">Load / New</button>
         </div>
 
