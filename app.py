@@ -50,13 +50,25 @@ def get_active_passcode() -> str:
     return normalize_passcode(document.getElementById("guild-passcode").value)
 
 
+def is_authorized_passcode(passcode: str) -> bool:
+    configured = get_default_passcode()
+    if not configured:
+        return bool(passcode)
+    return passcode == configured
+
+
 def set_active_guild_label():
     passcode = get_active_passcode()
     label = document.getElementById("guild-active")
-    if passcode:
-        label.innerText = f"Guild selected: {passcode}"
-    else:
+    if not passcode:
         label.innerText = "No guild selected."
+        return
+
+    if is_authorized_passcode(passcode):
+        title = str(getattr(window, "GUILD_TITLE", "Guild")).strip() or "Guild"
+        label.innerText = f"Access granted: {title}"
+    else:
+        label.innerText = "Passcode entered, but not authorized."
 
 
 def apply_custom_graphics():
@@ -205,8 +217,16 @@ async def refresh_data(show_status: bool = True):
         render_roster([])
         return
 
-    if not get_active_passcode():
+    passcode = get_active_passcode()
+    if not passcode:
         set_status("Enter guild passcode and click Join Guild.")
+        state["rows"] = []
+        render_day_counts([])
+        render_roster([])
+        return
+
+    if not is_authorized_passcode(passcode):
+        set_status("Invalid guild passcode.")
         state["rows"] = []
         render_day_counts([])
         render_roster([])
@@ -272,6 +292,10 @@ async def save_member(event=None):
         set_status("Join a guild first using passcode.")
         return
 
+    if not is_authorized_passcode(guild_code):
+        set_status("Invalid guild passcode.")
+        return
+
     row = {
         "guild_code": guild_code,
         "name": name,
@@ -296,6 +320,12 @@ async def join_guild(event=None):
     if not passcode:
         set_status("Guild passcode is required.")
         return
+
+    if not is_authorized_passcode(passcode):
+        set_active_guild_label()
+        set_status("Invalid guild passcode.")
+        return
+
     window.localStorage.setItem("guild_passcode", passcode)
     set_active_guild_label()
     await refresh_data()
@@ -315,7 +345,7 @@ def clear_guild(event=None):
 async def boot():
     apply_custom_graphics()
     persisted = normalize_passcode(window.localStorage.getItem("guild_passcode"))
-    initial = persisted or get_default_passcode()
+    initial = persisted
     if initial:
         document.getElementById("guild-passcode").value = initial
     set_active_guild_label()
