@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guild GT Availability</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2025.2.2/core.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./config.js"></script>
+    <script type="module" src="https://pyscript.net/releases/2025.2.2/core.js"></script>
+  </head>
+  <body>
+    <main class="container">
+      <img id="guild-logo" class="guild-logo" alt="Guild Logo" />
+      <h1>GT Availability</h1>
+      <p class="muted">Track guild availability and attacks (0-3) with weekly reset.</p>
+
+      <section class="card">
+        <h2>Guild Access</h2>
+        <div class="row">
+          <label for="guild-passcode">Guild Passcode</label>
+          <input id="guild-passcode" type="password" placeholder="Enter guild passcode" />
+          <button id="join-guild-btn" py-click="join_guild">Join Guild</button>
+          <button id="clear-guild-btn" py-click="clear_guild">Clear</button>
+        </div>
+        <p id="guild-active" class="muted">No guild selected.</p>
+      </section>
+
+      <section class="card">
+        <h2>Member Update</h2>
+        <div class="row">
+          <label for="member-name">Member Name</label>
+          <input id="member-name" type="text" placeholder="e.g. Hankovic" />
+          <button id="load-profile-btn" py-click="load_profile">Load / New</button>
+        </div>
+
+        <div class="row days-grid">
+          <label><input id="day-wed" type="checkbox" /> WED</label>
+          <label><input id="day-thur" type="checkbox" /> THUR</label>
+          <label><input id="day-fri" type="checkbox" /> FRI</label>
+          <label><input id="day-sat" type="checkbox" /> SAT</label>
+          <label><input id="day-sun" type="checkbox" /> SUN</label>
+          <label><input id="day-mon" type="checkbox" /> MON</label>
+          <label><input id="day-tues" type="checkbox" /> TUES</label>
+        </div>
+
+        <div class="row attacks-row">
+          <label for="attacks-used">Attacks Used</label>
+          <input id="attacks-used" type="range" min="0" max="3" value="0" py-input="render_attack_value" />
+          <strong id="attacks-value">0 / 3</strong>
+          <button id="save-member-btn" py-click="save_member">Save</button>
+        </div>
+        <p id="status" class="status">Ready.</p>
+      </section>
+
+      <section class="card">
+        <h2>Guild Overview</h2>
+        <div id="day-counts" class="counts"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Attacks Used</th>
+              <th>Attacks Left</th>
+              <th>Available Days</th>
+            </tr>
+          </thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script type="py" src="./app.py"></script>
+  </body>
+</html>

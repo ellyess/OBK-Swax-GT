@@ -1,0 +1,13 @@
+- [x] Verify that the copilot-instructions.md file in the .github directory is created.
+- [x] Clarify Project Requirements (GitHub Pages app, switched to Python frontend).
+- [x] Scaffold the Project (static Python/PyScript app scaffolded in `.`).
+- [x] Customize the Project (guild availability, attacks 0-3, weekly reset, shared sync).
+- [x] Install Required Extensions (No extensions required by setup info).
+- [x] Compile the Project (`/usr/local/bin/python3 -m py_compile app.py` passed).
+- [x] Create and Run Task (Skipped: no VS Code task required for this static site).
+- [ ] Launch the Project (Pending user confirmation for debug mode launch).
+- [x] Ensure Documentation is Complete (`README.md` updated and this file cleaned of HTML comments).
+
+- Work through each checklist item systematically.
+- Keep communication concise and focused.
+- Follow development best practices.
