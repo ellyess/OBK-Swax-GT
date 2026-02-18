@@ -49,13 +49,14 @@ body::before {
   max-width: 300px;
   max-height: 120px;
   object-fit: contain;
-  margin: 0 0 16px;
+  margin: 0 auto 16px;
   filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.7));
 }
 
 h1 {
   margin: 0 0 8px;
   font-size: 2rem;
+  text-align: center;
 }
 
 h2 {
@@ -66,6 +67,10 @@ h2 {
 .muted {
   margin: 0 0 20px;
   color: var(--text-muted);
+}
+
+.container > .muted {
+  text-align: center;
 }
 
 .card {
