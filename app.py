@@ -245,7 +245,7 @@ async def refresh_data(show_status: bool = True):
 
     passcode = get_active_passcode()
     if not passcode:
-        set_status("Enter guild passcode and click Join Guild.")
+        set_status("PASSCODE NEEDED TO ENTER")
         state["rows"] = []
         render_member_name_options([])
         render_day_counts([])
@@ -253,7 +253,7 @@ async def refresh_data(show_status: bool = True):
         return
 
     if not is_authorized_passcode(passcode):
-        set_status("Invalid guild passcode.")
+        set_status("WRONG PASSCODE ENTERED")
         state["rows"] = []
         render_member_name_options([])
         render_day_counts([])
