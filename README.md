@@ -5,7 +5,7 @@ A Python-in-the-browser (PyScript) web app for guild members to:
 - select available days (Wed-Tues),
 - track attacks used out of 3,
 - join a guild via passcode,
-- reset automatically every new ISO week.
+- reset automatically every Wednesday at 14:00 UTC.
 
 ## Stack
 
@@ -109,4 +109,4 @@ On load/sync, if a member row has an old `week_key`, the app resets:
 
 - attacks used → `0`
 - all day availability → `false`
-- week key → current ISO week
+- week key → current reset cycle start (`Wednesday 14:00 UTC`)

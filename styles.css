@@ -191,6 +191,16 @@ button:hover {
   font-weight: 600;
 }
 
+.reset-countdown {
+  margin: 4px 0 8px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.reset-next {
+  margin: 0 0 8px;
+}
+
 .counts {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

@@ -1,5 +1,5 @@
 # pyright: reportMissingImports=false
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import json
 import asyncio
 from html import escape
@@ -20,10 +20,60 @@ TABLE = "guild_availability"
 state = {"rows": []}
 
 
+def current_reset_cycle_start(now: datetime | None = None) -> datetime:
+    if now is None:
+        now = datetime.now(timezone.utc)
+
+    days_since_wednesday = (now.weekday() - 2) % 7
+    last_wednesday = now.date() - timedelta(days=days_since_wednesday)
+    reset_anchor = datetime(
+        year=last_wednesday.year,
+        month=last_wednesday.month,
+        day=last_wednesday.day,
+        hour=14,
+        minute=0,
+        second=0,
+        microsecond=0,
+        tzinfo=timezone.utc,
+    )
+
+    if now < reset_anchor:
+        reset_anchor = reset_anchor - timedelta(days=7)
+
+    return reset_anchor
+
+
+def next_reset_datetime(now: datetime | None = None) -> datetime:
+    return current_reset_cycle_start(now) + timedelta(days=7)
+
+
 def current_week_key() -> str:
-    now = datetime.now(timezone.utc).date()
-    year, week, _ = now.isocalendar()
-    return f"{year}-W{week:02d}"
+    return current_reset_cycle_start().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def render_reset_countdown():
+    target = next_reset_datetime()
+    now = datetime.now(timezone.utc)
+    remaining_seconds = max(0, int((target - now).total_seconds()))
+
+    days, remainder = divmod(remaining_seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    countdown_el = document.getElementById("reset-countdown")
+    countdown_el.innerText = (
+        f"RESET IN {days}d {hours:02d}h {minutes:02d}m {seconds:02d}s "
+        "(WED 14:00 UTC)"
+    )
+
+    next_el = document.getElementById("reset-next")
+    next_el.innerText = f"NEXT RESET: {target.strftime('%a, %d %b %Y %H:%M UTC')}"
+
+
+async def update_reset_countdown_loop():
+    while True:
+        render_reset_countdown()
+        await asyncio.sleep(1)
 
 
 def clamp_attacks(value: int) -> int:
@@ -287,7 +337,7 @@ async def refresh_data(show_status: bool = True):
         render_roster(updated)
 
         if show_status:
-            set_status(f"Synced {len(updated)} member(s) for {current_week_key()}.")
+            set_status(f"Synced {len(updated)} member(s) for reset cycle {current_week_key()}.")
     except Exception as error:
         set_status(f"Sync failed: {error}")
 
@@ -389,6 +439,8 @@ def clear_guild(event=None):
 async def boot():
     apply_custom_graphics()
     render_member_name_options([])
+    render_reset_countdown()
+    asyncio.ensure_future(update_reset_countdown_loop())
     persisted = normalize_passcode(window.localStorage.getItem("guild_passcode"))
     initial = persisted
     if initial:
