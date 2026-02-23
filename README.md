@@ -5,7 +5,7 @@ A Python-in-the-browser (PyScript) web app for guild members to:
 - select available days (Wed-Tues),
 - track attacks used out of 3,
 - join a guild via passcode,
-- reset automatically every Wednesday at 14:00 UTC.
+- resets Wednesday 14:00 UTC.
 
 ## Stack
 

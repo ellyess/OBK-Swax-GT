@@ -61,13 +61,15 @@ def render_reset_countdown():
     minutes, seconds = divmod(remainder, 60)
 
     countdown_el = document.getElementById("reset-countdown")
-    countdown_el.innerText = (
-        f"RESET IN {days}d {hours:02d}h {minutes:02d}m {seconds:02d}s "
-        "(WED 14:00 UTC)"
-    )
+    if countdown_el is not None:
+        countdown_el.innerText = (
+            f"Reset in {days}d {hours:02d}h {minutes:02d}m {seconds:02d}s "
+            "(Wednesday 14:00 UTC)"
+        )
 
     next_el = document.getElementById("reset-next")
-    next_el.innerText = f"NEXT RESET: {target.strftime('%a, %d %b %Y %H:%M UTC')}"
+    if next_el is not None:
+        next_el.innerText = f"Next reset: {target.strftime('%a, %d %b %Y %H:%M UTC')}"
 
 
 async def update_reset_countdown_loop():
