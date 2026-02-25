@@ -15,9 +15,126 @@ except ImportError:  # Local editor/runtime fallback
     document = None
 
 DAYS = ["wed", "thur", "fri", "sat", "sun", "mon", "tues"]
+CATEGORY_ORDER = ["Europe", "SA", "US", "Asia", "Pawker"]
+SLOTS = [
+    {"id": "europe_wed", "label": "Europe Wednesday", "opens": "2026-02-25 18:00 UTC"},
+    {"id": "sa_wed", "label": "SA Wednesday", "opens": "2026-02-25 22:00 UTC"},
+    {"id": "us_wed", "label": "US Wednesday", "opens": "2026-02-26 01:00 UTC"},
+    {"id": "asia_thu", "label": "Asia Thursday", "opens": "2026-02-26 12:00 UTC"},
+    {"id": "europe_thu", "label": "Europe Thursday", "opens": "2026-02-26 18:00 UTC"},
+    {"id": "sa_thu", "label": "SA Thursday", "opens": "2026-02-26 22:00 UTC"},
+    {"id": "us_thu", "label": "US Thursday", "opens": "2026-02-27 01:00 UTC"},
+    {"id": "asia_fri", "label": "Asia Friday", "opens": "2026-02-27 12:00 UTC"},
+    {"id": "europe_fri", "label": "Europe Friday", "opens": "2026-02-27 18:00 UTC"},
+    {"id": "sa_fri", "label": "SA Friday", "opens": "2026-02-27 22:00 UTC"},
+    {"id": "us_fri", "label": "US Friday", "opens": "2026-02-28 01:00 UTC"},
+    {"id": "asia_sat", "label": "Asia Saturday", "opens": "2026-02-28 06:00 UTC"},
+    {"id": "pawker_sat_1", "label": "Pawker Saturday", "opens": "2026-02-28 08:00 UTC"},
+    {"id": "europe_sat", "label": "Europe Saturday", "opens": "2026-02-28 13:00 UTC"},
+    {"id": "sa_sat", "label": "SA Saturday", "opens": "2026-02-28 17:00 UTC"},
+    {"id": "us_sat", "label": "US Saturday", "opens": "2026-02-28 20:00 UTC"},
+    {"id": "pawker_sat_2", "label": "Pawker Saturday", "opens": "2026-02-28 20:00 UTC"},
+    {"id": "asia_sun", "label": "Asia Sunday", "opens": "2026-03-01 06:00 UTC"},
+    {"id": "europe_sun", "label": "Europe Sunday", "opens": "2026-03-01 13:00 UTC"},
+    {"id": "sa_sun", "label": "SA Sunday", "opens": "2026-03-01 17:00 UTC"},
+    {"id": "us_sun", "label": "US Sunday", "opens": "2026-03-01 20:00 UTC"},
+    {"id": "asia_mon", "label": "Asia Monday", "opens": "2026-03-02 12:00 UTC"},
+    {"id": "europe_mon", "label": "Europe Monday", "opens": "2026-03-02 18:00 UTC"},
+    {"id": "sa_mon", "label": "SA Monday", "opens": "2026-03-02 22:00 UTC"},
+    {"id": "us_mon", "label": "US Monday", "opens": "2026-03-03 01:00 UTC"},
+    {"id": "asia_tues", "label": "Asia Tuesday", "opens": "2026-03-03 12:00 UTC"},
+    {"id": "europe_tues", "label": "Europe Tuesday", "opens": "2026-03-03 18:00 UTC"},
+    {"id": "sa_tues", "label": "SA Tuesday", "opens": "2026-03-03 22:00 UTC"},
+    {"id": "us_tues", "label": "US Tuesday", "opens": "2026-03-04 01:00 UTC"},
+    {"id": "asia_wed", "label": "Asia Wednesday", "opens": "2026-03-04 12:00 UTC"},
+]
 TABLE = "guild_availability"
 
-state = {"rows": []}
+state = {"rows": [], "active_slots": []}
+
+
+def slot_id_set() -> set[str]:
+    return {slot["id"] for slot in SLOTS}
+
+
+def normalize_slots(raw_slots) -> list[str]:
+    if isinstance(raw_slots, str):
+        try:
+            parsed = json.loads(raw_slots)
+            raw_slots = parsed
+        except Exception:
+            raw_slots = []
+
+    if not isinstance(raw_slots, list):
+        raw_slots = []
+
+    allowed = slot_id_set()
+    deduped = []
+    seen = set()
+    for slot_id in raw_slots:
+        cleaned = str(slot_id).strip()
+        if not cleaned or cleaned not in allowed or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        deduped.append(cleaned)
+    return deduped
+
+
+def slot_category(slot_label: str) -> str:
+    for category in CATEGORY_ORDER:
+        if str(slot_label).startswith(category):
+            return category
+    return "Other"
+
+
+def slot_short_label(slot_label: str) -> str:
+    category = slot_category(slot_label)
+    prefix = f"{category} "
+    if str(slot_label).startswith(prefix):
+        return str(slot_label)[len(prefix) :]
+    return str(slot_label)
+
+
+def local_utc_offset_label(local_dt: datetime) -> str:
+    offset = local_dt.utcoffset() or timedelta(0)
+    total_minutes = int(offset.total_seconds() // 60)
+    sign = "+" if total_minutes >= 0 else "-"
+    absolute_minutes = abs(total_minutes)
+    hours = absolute_minutes // 60
+    minutes = absolute_minutes % 60
+    return f"UTC{sign}{hours:02d}:{minutes:02d}"
+
+
+def parse_utc_text_datetime(raw_value: str) -> datetime | None:
+    value = str(raw_value or "").strip()
+    if not value:
+        return None
+
+    try:
+        parsed = datetime.strptime(value, "%Y-%m-%d %H:%M UTC")
+        return parsed.replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def format_local_from_utc_text(raw_value: str) -> str:
+    parsed = parse_utc_text_datetime(raw_value)
+    if parsed is None:
+        return str(raw_value or "")
+
+    local_dt = parsed.astimezone()
+    offset = local_utc_offset_label(local_dt)
+    return f"{local_dt.strftime('%Y-%m-%d %I:%M %p')} ({offset})"
+
+
+def render_local_timezone_note():
+    note = document.getElementById("local-time-note")
+    if note is None:
+        return
+
+    now_local = datetime.now().astimezone()
+    offset = local_utc_offset_label(now_local)
+    note.innerText = f"Times are shown in your local timezone ({offset})."
 
 
 def current_reset_cycle_start(now: datetime | None = None) -> datetime:
@@ -62,14 +179,18 @@ def render_reset_countdown():
 
     countdown_el = document.getElementById("reset-countdown")
     if countdown_el is not None:
+        target_local = target.astimezone()
+        offset = local_utc_offset_label(target_local)
         countdown_el.innerText = (
             f"Reset in {days}d {hours:02d}h {minutes:02d}m {seconds:02d}s "
-            "(Wednesday 14:00 UTC)"
+            f"(local target: {target_local.strftime('%a %I:%M %p')} {offset})"
         )
 
     next_el = document.getElementById("reset-next")
     if next_el is not None:
-        next_el.innerText = f"Next reset: {target.strftime('%a, %d %b %Y %H:%M UTC')}"
+        target_local = target.astimezone()
+        offset = local_utc_offset_label(target_local)
+        next_el.innerText = f"Next reset: {target_local.strftime('%a, %d %b %Y %I:%M %p')} ({offset})"
 
 
 async def update_reset_countdown_loop():
@@ -181,6 +302,7 @@ def normalize_row(row: dict) -> tuple[dict, bool]:
         "name": str(row.get("name", "")).strip(),
         "week_key": str(row.get("week_key", "")).strip(),
         "attacks_used": clamp_attacks(row.get("attacks_used", 0)),
+        "slots": normalize_slots(row.get("slots", [])),
     }
     for day in DAYS:
         normalized[day] = bool(row.get(day, False))
@@ -189,6 +311,7 @@ def normalize_row(row: dict) -> tuple[dict, bool]:
     if should_reset:
         normalized["week_key"] = current_week_key()
         normalized["attacks_used"] = 0
+        normalized["slots"] = []
         for day in DAYS:
             normalized[day] = False
     return normalized, should_reset
@@ -224,7 +347,7 @@ async def fetch_rows() -> list[dict]:
     url, _ = get_supabase_config()
     endpoint = (
         f"{url}/rest/v1/{TABLE}"
-        f"?select=guild_code,name,week_key,attacks_used,wed,thur,fri,sat,sun,mon,tues"
+        f"?select=guild_code,name,week_key,attacks_used,slots,wed,thur,fri,sat,sun,mon,tues"
         f"&guild_code=eq.{guild_code_encoded}&order=name.asc"
     )
     response = await pyfetch(endpoint, method="GET", headers=supabase_headers())
@@ -246,27 +369,97 @@ async def upsert_row(row: dict):
         raise RuntimeError(await response.text())
 
 
-def render_day_counts(rows: list[dict]):
-    counts_container = document.getElementById("day-counts")
+def render_slot_cards(rows: list[dict]):
+    container = document.getElementById("slot-grid")
+    if container is None:
+        return
+
+    selected = set(state.get("active_slots", []))
+    member_name = document.getElementById("member-name").value.strip()
+    resolved_name = resolve_allowed_member_name(member_name)
+    rows_for_counts = [dict(row) for row in rows]
+    if resolved_name is not None:
+        updated = False
+        for row in rows_for_counts:
+            if row.get("name") == resolved_name:
+                row["slots"] = list(state.get("active_slots", []))
+                updated = True
+                break
+        if not updated and state.get("active_slots", []):
+            rows_for_counts.append({"name": resolved_name, "slots": list(state.get("active_slots", []))})
+
+    grouped_html: dict[str, list[str]] = {category: [] for category in CATEGORY_ORDER}
+    now_utc = datetime.now(timezone.utc)
+    for slot in SLOTS:
+        slot_id = slot["id"]
+        checked_names = sorted(
+            [str(row.get("name", "")).strip() for row in rows_for_counts if slot_id in row.get("slots", []) and str(row.get("name", "")).strip()],
+            key=str.lower,
+        )
+        checked_count = len(checked_names)
+        if checked_names:
+            preview_names = checked_names[:4]
+            remaining = checked_count - len(preview_names)
+            preview_text = ", ".join(preview_names)
+            if remaining > 0:
+                preview_text = f"{preview_text} +{remaining} more"
+            checked_by_text = f"Checked by: {preview_text}"
+            checked_by_title = ", ".join(checked_names)
+        else:
+            checked_by_text = "Checked by: none"
+            checked_by_title = ""
+        is_selected = slot_id in selected
+        button_class = "slot-circle is-selected" if is_selected else "slot-circle"
+        marker = "✓" if is_selected else ""
+        opens_local = format_local_from_utc_text(slot["opens"])
+        slot_open_utc = parse_utc_text_datetime(slot["opens"])
+        slot_complete = bool(slot_open_utc and now_utc >= (slot_open_utc + timedelta(hours=1)))
+        card_class = "slot-card is-complete" if slot_complete else "slot-card"
+        button_disabled_attr = " disabled" if slot_complete else ""
+        button_title = " title='Slot completed'" if slot_complete else ""
+        short_label = slot_short_label(slot["label"])
+        category = slot_category(slot["label"])
+        card_html = (
+            f"<div class='{card_class}'>"
+            f"<button type='button' class='{button_class}' onclick=\"toggle_slot('{escape(slot_id)}')\"{button_disabled_attr}{button_title}>{marker}</button>"
+            "<div class='slot-meta'>"
+            f"<strong>{escape(short_label)}</strong>"
+            f"<span>Opens at: {escape(opens_local)}</span>"
+            f"<span>{checked_count} checked</span>"
+            f"<span class='slot-checkers' title='{escape(checked_by_title)}'>{escape(checked_by_text)}</span>"
+            "</div>"
+            "</div>"
+        )
+        if category not in grouped_html:
+            grouped_html[category] = []
+        grouped_html[category].append(card_html)
+
     html_parts = []
-    for day in DAYS:
-        count = sum(1 for row in rows if row.get(day, False))
-        html_parts.append(f"<div><strong>{day.upper()}</strong><br/>{count} available</div>")
-    counts_container.innerHTML = "".join(html_parts)
+    for category in CATEGORY_ORDER:
+        cards = grouped_html.get(category, [])
+        if not cards:
+            continue
+        html_parts.append(
+            "<div class='slot-row'>"
+            f"<h3 class='slot-row-title'>{escape(category)}</h3>"
+            f"<div class='slot-row-cards'>{''.join(cards)}</div>"
+            "</div>"
+        )
+
+    container.innerHTML = "".join(html_parts)
 
 
 def render_roster(rows: list[dict]):
     body = document.getElementById("roster-body")
     lines = []
     for row in rows:
-        available_days = ", ".join(day.upper() for day in DAYS if row.get(day, False)) or "-"
+        selected_slots = row.get("slots", [])
+        available_days = f"{len(selected_slots)} slot(s) selected"
         attacks_used = clamp_attacks(row.get("attacks_used", 0))
-        attacks_left = 3 - attacks_used
         lines.append(
             "<tr>"
             f"<td>{escape(str(row.get('name', '')))}</td>"
-            f"<td>{attacks_used}</td>"
-            f"<td>{attacks_left}</td>"
+            f"<td>{attacks_used} / 3</td>"
             f"<td>{available_days}</td>"
             "</tr>"
         )
@@ -277,21 +470,41 @@ def fill_form_for_member(name: str):
     member_name = name.strip()
     row = next((item for item in state["rows"] if item.get("name") == member_name), None)
     if row is None:
-        row = {"name": member_name, "attacks_used": 0, **empty_days()}
+        row = {"name": member_name, "attacks_used": 0, "slots": [], **empty_days()}
 
     document.getElementById("member-name").value = member_name
     document.getElementById("attacks-used").value = str(clamp_attacks(row.get("attacks_used", 0)))
-    for day in DAYS:
-        document.getElementById(f"day-{day}").checked = bool(row.get(day, False))
+    state["active_slots"] = normalize_slots(row.get("slots", []))
     render_attack_value()
+    render_slot_cards(state["rows"])
+
+
+def toggle_slot(slot_id: str):
+    member_name = document.getElementById("member-name").value.strip()
+    resolved_name = resolve_allowed_member_name(member_name)
+    if resolved_name is None:
+        set_status("Load a valid member profile before selecting slots.")
+        return
+
+    document.getElementById("member-name").value = resolved_name
+    current = set(state.get("active_slots", []))
+    if slot_id in current:
+        current.remove(slot_id)
+    else:
+        current.add(slot_id)
+
+    state["active_slots"] = normalize_slots(list(current))
+    render_slot_cards(state["rows"])
+    set_status(f"Updated slots for {resolved_name}. Click Save to sync.")
 
 
 async def refresh_data(show_status: bool = True):
     if not has_backend():
         set_status("Set SUPABASE_URL and SUPABASE_ANON_KEY in config.js to enable shared sync.")
         state["rows"] = []
+        state["active_slots"] = []
         render_member_name_options([])
-        render_day_counts([])
+        render_slot_cards([])
         render_roster([])
         return
 
@@ -299,16 +512,18 @@ async def refresh_data(show_status: bool = True):
     if not passcode:
         set_status("PASSCODE NEEDED TO ENTER")
         state["rows"] = []
+        state["active_slots"] = []
         render_member_name_options([])
-        render_day_counts([])
+        render_slot_cards([])
         render_roster([])
         return
 
     if not is_authorized_passcode(passcode):
         set_status("WRONG PASSCODE ENTERED")
         state["rows"] = []
+        state["active_slots"] = []
         render_member_name_options([])
-        render_day_counts([])
+        render_slot_cards([])
         render_roster([])
         return
 
@@ -335,11 +550,11 @@ async def refresh_data(show_status: bool = True):
 
         state["rows"] = updated
         render_member_name_options(updated)
-        render_day_counts(updated)
+        render_slot_cards(updated)
         render_roster(updated)
 
         if show_status:
-            set_status(f"Synced {len(updated)} member(s) for reset cycle {current_week_key()}.")
+            set_status(f"Synced {len(updated)} member(s).")
     except Exception as error:
         set_status(f"Sync failed: {error}")
 
@@ -396,9 +611,8 @@ async def save_member(event=None):
         "name": resolved_name,
         "week_key": current_week_key(),
         "attacks_used": clamp_attacks(document.getElementById("attacks-used").value),
+        "slots": state.get("active_slots", []),
     }
-    for day in DAYS:
-        row[day] = bool(document.getElementById(f"day-{day}").checked)
 
     set_status(f"Saving {resolved_name}...")
     try:
@@ -431,8 +645,9 @@ def clear_guild(event=None):
     document.getElementById("guild-passcode").value = ""
     window.localStorage.removeItem("guild_passcode")
     state["rows"] = []
+    state["active_slots"] = []
     render_member_name_options([])
-    render_day_counts([])
+    render_slot_cards([])
     render_roster([])
     set_active_guild_label()
     set_status("Guild selection cleared.")
@@ -441,6 +656,8 @@ def clear_guild(event=None):
 async def boot():
     apply_custom_graphics()
     render_member_name_options([])
+    render_local_timezone_note()
+    render_slot_cards([])
     render_reset_countdown()
     asyncio.ensure_future(update_reset_countdown_loop())
     persisted = normalize_passcode(window.localStorage.getItem("guild_passcode"))
@@ -458,6 +675,7 @@ if window is not None:
     window.save_member = save_member
     window.join_guild = join_guild
     window.clear_guild = clear_guild
+    window.toggle_slot = toggle_slot
 
 if window is not None and document is not None:
     asyncio.ensure_future(boot())

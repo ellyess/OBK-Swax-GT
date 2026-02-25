@@ -2,7 +2,7 @@
 
 A Python-in-the-browser (PyScript) web app for guild members to:
 
-- select available days (Wed-Tues),
+- click available GT slots with a circle check,
 - track attacks used out of 3,
 - join a guild via passcode,
 - resets Wednesday 14:00 UTC.
@@ -39,6 +39,7 @@ update public.guild_availability set guild_code = 'default' where guild_code is 
 alter table public.guild_availability alter column guild_code set default 'default';
 alter table public.guild_availability alter column guild_code set not null;
 alter table public.guild_availability alter column name set not null;
+alter table public.guild_availability add column if not exists slots jsonb not null default '[]'::jsonb;
 
 create unique index if not exists guild_availability_guild_name_idx
 on public.guild_availability (guild_code, name);
@@ -108,5 +109,5 @@ Then browse to `http://localhost:8000`.
 On load/sync, if a member row has an old `week_key`, the app resets:
 
 - attacks used → `0`
-- all day availability → `false`
+- selected slots → `[]`
 - week key → current reset cycle start (`Wednesday 14:00 UTC`)

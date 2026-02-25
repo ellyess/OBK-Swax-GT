@@ -165,20 +165,95 @@ button:hover {
   background: var(--button-hover);
 }
 
-.days-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(80px, 1fr));
+.slot-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.slot-row {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.days-grid label {
+.slot-row-title {
+  margin: 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #ffd2d7;
+}
+
+.slot-row-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.slot-card {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px;
+  gap: 10px;
+  padding: 10px;
   border: 1px solid var(--input-border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--input-bg);
+}
+
+.slot-card.is-complete {
+  filter: blur(1px);
+  opacity: 0.55;
+}
+
+.slot-card.is-complete .slot-meta {
+  pointer-events: none;
+}
+
+.slot-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 2px solid rgba(212, 191, 229, 0.38);
+  background: transparent;
+  color: #5ffb8b;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-circle:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.slot-circle.is-selected {
+  border-color: rgba(95, 251, 139, 0.75);
+  background: rgba(95, 251, 139, 0.14);
+}
+
+.slot-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.slot-meta strong {
+  color: var(--text-main);
+  font-size: 0.92rem;
+}
+
+.slot-checkers {
+  color: #cfe8d4;
+  font-size: 0.8rem;
+  line-height: 1.2;
 }
 
 .attacks-row input[type="range"] {
@@ -201,22 +276,6 @@ button:hover {
   margin: 0 0 8px;
 }
 
-.counts {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.counts div {
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  padding: 8px;
-  text-align: center;
-  font-size: 0.9rem;
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -234,8 +293,13 @@ th {
 }
 
 @media (max-width: 900px) {
-  .days-grid,
-  .counts {
+  .slot-row-cards {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .slot-row-cards {
+    grid-template-columns: 1fr;
   }
 }

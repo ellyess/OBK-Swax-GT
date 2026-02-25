@@ -8,15 +8,16 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <link rel="stylesheet" href="https://pyscript.net/releases/2025.2.2/core.css" />
-    <link rel="stylesheet" href="./styles.css?v=20260223-1" />
-    <script src="./config.js?v=20260223-1"></script>
+    <link rel="stylesheet" href="./styles.css?v=20260225-2" />
+    <script src="./config.js?v=20260225-2"></script>
     <script type="module" src="https://pyscript.net/releases/2025.2.2/core.js"></script>
   </head>
   <body>
     <main class="container">
       <img id="guild-logo" class="guild-logo" alt="Guild Logo" />
       <h1>GT Availability</h1>
-      <p class="muted">Track guild availability and attacks (0-3), resets Wednesday 14:00 UTC.</p>
+      <!-- <p class="muted">Track guild availability and attacks (0-3).</p> -->
+      <p id="local-time-note" class="muted">Times are shown in your local timezone.</p>
       <p class="hero-link-row">
         <a
           class="hero-link-btn"
@@ -39,45 +40,35 @@
       </section>
 
       <section class="card">
-        <h2>MEMBER UPDATE</h2>
+        <h2>MEMBER SELECTION</h2>
         <div class="row">
           <label for="member-name">MEMBER NAME</label>
           <input id="member-name" type="text" list="member-names" placeholder="e.g. ellyess" />
           <datalist id="member-names"></datalist>
-          <button id="load-profile-btn" py-click="load_profile">LOAD / NEW</button>
-        </div>
-
-        <div class="row days-grid">
-          <label><input id="day-wed" type="checkbox" /> WED</label>
-          <label><input id="day-thur" type="checkbox" /> THUR</label>
-          <label><input id="day-fri" type="checkbox" /> FRI</label>
-          <label><input id="day-sat" type="checkbox" /> SAT</label>
-          <label><input id="day-sun" type="checkbox" /> SUN</label>
-          <label><input id="day-mon" type="checkbox" /> MON</label>
-          <label><input id="day-tues" type="checkbox" /> TUES</label>
+          <button id="load-profile-btn" py-click="load_profile">LOAD</button>
+          <button id="save-member-btn" py-click="save_member">SAVE</button>
         </div>
 
         <div class="row attacks-row">
-          <label for="attacks-used">Attacks Used</label>
+          <label for="attacks-used">ATTACKS USED</label>
           <input id="attacks-used" type="range" min="0" max="3" value="0" py-input="render_attack_value" />
           <strong id="attacks-value">0 / 3</strong>
-          <button id="save-member-btn" py-click="save_member">Save</button>
         </div>
-        <p id="reset-countdown" class="muted reset-countdown">Reset in --d --h --m --s (Wednesday 14:00 UTC)</p>
-        <p id="reset-next" class="muted reset-next">Next reset: ---- -- -- --:-- UTC</p>
+        <p id="reset-countdown" class="muted reset-countdown">Reset in --d --h --m --s (local target time)</p>
+        <p id="reset-next" class="muted reset-next">Next reset: ---- -- -- --:-- (local time)</p>
         <p id="status" class="status">Ready.</p>
+
+        <div id="slot-grid" class="slot-grid"></div>
       </section>
 
       <section class="card">
         <h2>GUILD OVERVIEW</h2>
-        <div id="day-counts" class="counts"></div>
         <table>
           <thead>
             <tr>
               <th>MEMBER</th>
-              <th>ATTACKS USED</th>
-              <th>ATTACKS LEFT</th>
-              <th>AVAILABLE DAYS</th>
+              <th>ATTACKS</th>
+              <th>AVAILABLE SLOTS</th>
             </tr>
           </thead>
           <tbody id="roster-body"></tbody>
@@ -85,6 +76,6 @@
       </section>
     </main>
 
-    <script type="py" src="./app.py?v=20260223-1"></script>
+    <script type="py" src="./app.py?v=20260225-2"></script>
   </body>
 </html>
